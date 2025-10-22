@@ -6,6 +6,19 @@
 # リール構成
 ## 図柄ID
 `JUGGLER7`、`BAR`、`BELL`、`CLOWN`、`GRAPE`、`CHERRY`、`REPLAY`
+
+```
+enum SymbolID {
+    JUGGLER7,
+    BAR,
+    BELL,
+    CLOWN,
+    GRAPE,
+    CHERRY,
+    REPLAY
+};
+```
+
 ## 各リールのストリップ
 `left_reel.png`<br>
 
@@ -19,21 +32,44 @@
 
 `[GRAPE, JUGGLER7, BAR, BELL, REPLAY, GRAPE, CLOWN, BELL, REPLAY, GRAPE, CLOWN, BELL, REPLAY, GRAPE, CLOWN, BELL, REPLAY, GRAPE, CLOWN, BELL, REPLAY]`<br>
 
+```
+struct ReelStrip {
+    std::vector<SymbolID> symbols;
+};
+
+ReelStrip left  = { {BELL, JUGGLER7, REPLAY, GRAPE, REPLAY, GRAPE, BAR, CHERRY, GRAPE, REPLAY,GRAPE, JUGGLER7, CLOWN, GRAPE, REPLAY, GRAPE, CHERRY, BAR, GRAPE, REPLAY, GRAPE} };
+
+ReelStrip center = { {REPLAY, JUGGLER7, GRAPE, CHERRY, REPLAY, BELL, GRAPE, CHERRY, REPLAY, BAR,GRAPE, CHERRY, REPLAY, BELL, GRAPE, CHERRY, REPLAY, BAR, GRAPE, CHERRY, CLOWN} };
+
+ReelStrip right  = { {GRAPE, JUGGLER7, BAR, BELL, REPLAY, GRAPE, CLOWN, BELL, REPLAY, GRAPE,CLOWN, BELL, REPLAY, GRAPE, CLOWN, BELL, REPLAY, GRAPE, CLOWN, BELL, REPLAY} };
+```
+
 # 成立ライン定義
-リールの表示行を `0=上, 1=中, 2=下` とし、
-- Line1： `[0, 0, 0]`
-- Line2： `[1, 1, 1]`
-- Line3： `[2, 2, 2]`
-- Line4： `[0, 1, 2]`
-- Line5： `[2, 1, 0]`
+```
+const std::vector<std::array<int, 3>> paylines = {
+    {0, 0, 0},  // 上段
+    {1, 1, 1},  // 中段
+    {2, 2, 2},  // 下段
+    {0, 1, 2},  // 右下がり
+    {2, 1, 0}   // 右上がり
+};
+```
 
 # ペイテーブル
-|図柄|揃い形|払い出し(3BET)|払い出し(2BET)|
-|:---:|:---:|:---:|:---:|
-|`REPLAY`|3連|BET戻し|BET戻し|
-|`CHERRY`|左停止|1枚|7枚|
-|`GRAPE`|3連|8枚|14枚|
-|`CLOWN`|3連|10枚|10枚|
-|`BELL`|3連|14枚|14枚|
-|``|3連|REGボーナス|REGボーナス|
-|``||||
+```
+struct PayTableEntry {
+    std::vector<SymbolID> pattern;
+    int payout_3bet;
+    int payout_2bet;
+};
+
+std::vector<PayTableEntry> payTable = {
+    {{REPLAY, REPLAY, REPLAY}, 0, 0},        // 再遊技
+    {{CHERRY, CHERRY, CHERRY}, 1, 7},        // チェリー
+    {{GRAPE, GRAPE, GRAPE}, 8, 14},
+    {{CLOWN, CLOWN, CLOWN}, 10, 10},
+    {{BELL, BELL, BELL}, 14, 14},
+    {{JUGGLER7, JUGGLER7, BAR}, -1, -1},     // REG
+    {{JUGGLER7, JUGGLER7, JUGGLER7}, -2, -2} // BIG
+};
+```
